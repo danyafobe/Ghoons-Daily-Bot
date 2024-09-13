@@ -1,10 +1,10 @@
 import logging
-import random
 import datetime
+import random
 from telegram import Update
 from telegram.ext import Application, CommandHandler, CallbackContext
 from telegram.ext import JobQueue
-import requests
+import httpx
 
 # Настройки
 TOKEN = '7420449985:AAHVJSWeVstT2kXWh1MPhGi8eGbr4vfA3h0'
@@ -16,28 +16,40 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 # Хранилище пользователей
 user_ids = set()
 
-def start(update: Update, context: CallbackContext):
+async def start(update: Update, context: CallbackContext):
     user_id = update.message.from_user.id
     user_ids.add(user_id)
-    update.message.reply_text("You've been registered for daily Ghoons!")
+    await update.message.reply_text("You've been registered for daily Ghoons!")
 
-def fetch_random_ghoon():
-    response = requests.get(NFT_COLLECTION_API)
-    data = response.json()
-    # Для упрощения возьмем первый элемент из списка traits
-    ghoon = {
-        "image_url": data['image_url'],
-        "message": data['message']
-    }
-    return ghoon
+async def fetch_random_ghoon():
+    async with httpx.AsyncClient() as client:
+        response = await client.get(NFT_COLLECTION_API)
+        data = response.json()
+        
+        # Предположим, что `data` содержит список объектов NFT в поле `nfts`
+        if 'nfts' not in data or not data['nfts']:
+            return {
+                "image_url": "https://example.com/default_image.png",  # Замените на изображение по умолчанию
+                "message": "No Ghoon available today!"
+            }
+        
+        # Выбираем случайный NFT из списка
+        ghoon = random.choice(data['nfts'])
+        image_url = ghoon.get('image_url', 'https://example.com/default_image.png')
+        message = "This Ghoon brings happiness today!"  # Или используйте описание из API, если оно доступно
+        
+        return {
+            "image_url": image_url,
+            "message": message
+        }
 
-def send_daily_ghoon(context: CallbackContext):
+async def send_daily_ghoon(context: CallbackContext):
     for user_id in user_ids:
-        ghoon = fetch_random_ghoon()
+        ghoon = await fetch_random_ghoon()
         image_url = ghoon['image_url']
         message = f"This is your Ghoons for today! {ghoon['message']}"
         
-        context.bot.send_photo(chat_id=user_id, photo=image_url, caption=message)
+        await context.bot.send_photo(chat_id=user_id, photo=image_url, caption=message)
 
 def main():
     # Создание объекта Application
@@ -48,6 +60,10 @@ def main():
 
     # Получение JobQueue
     job_queue = application.job_queue
+    
+    if job_queue is None:
+        logging.error("JobQueue is not available. Please make sure `python-telegram-bot[job-queue]` is installed.")
+        return
 
     # Планирование ежедневного задания
     job_queue.run_daily(send_daily_ghoon, time=datetime.time(hour=9, minute=0, second=0))
