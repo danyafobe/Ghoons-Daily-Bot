@@ -2,7 +2,8 @@ import logging
 import random
 import datetime
 from telegram import Update
-from telegram.ext import Application, CommandHandler, CallbackContext, JobQueue
+from telegram.ext import Application, CommandHandler, CallbackContext
+from telegram.ext import JobQueue
 import requests
 
 # Настройки
@@ -45,8 +46,10 @@ def main():
     # Добавление обработчика команд /start
     application.add_handler(CommandHandler("start", start))
 
-    # Планирование ежедневного задания
+    # Получение JobQueue
     job_queue = application.job_queue
+
+    # Планирование ежедневного задания
     job_queue.run_daily(send_daily_ghoon, time=datetime.time(hour=9, minute=0, second=0))
 
     # Запуск бота
