@@ -2,7 +2,7 @@ import logging
 import random
 import datetime
 from telegram import Update
-from telegram.ext import Updater, CommandHandler, CallbackContext, JobQueue
+from telegram.ext import Application, CommandHandler, CallbackContext, JobQueue
 import requests
 
 # Настройки
@@ -39,19 +39,18 @@ def send_daily_ghoon(context: CallbackContext):
         context.bot.send_photo(chat_id=user_id, photo=image_url, caption=message)
 
 def main():
-    updater = Updater(TOKEN)
-    dp = updater.dispatcher
-    job_queue = updater.job_queue
+    # Создание объекта Application
+    application = Application.builder().token(TOKEN).build()
 
-    # Команда /start
-    dp.add_handler(CommandHandler("start", start))
+    # Добавление обработчика команд /start
+    application.add_handler(CommandHandler("start", start))
 
     # Планирование ежедневного задания
+    job_queue = application.job_queue
     job_queue.run_daily(send_daily_ghoon, time=datetime.time(hour=9, minute=0, second=0))
 
     # Запуск бота
-    updater.start_polling()
-    updater.idle()
+    application.run_polling()
 
 if __name__ == '__main__':
     main()
