@@ -8,7 +8,7 @@ import httpx
 
 # Настройки
 TOKEN = '7420449985:AAHVJSWeVstT2kXWh1MPhGi8eGbr4vfA3h0'
-NFT_COLLECTION_API = 'https://api.pallet.exchange/api/v2/nfts/sei17atqkdaqhwg3et5pr73wc7k2tv0h0httgrmx58hdwk764yf9jc9sp9ldhc/details'
+BASE_IPFS_URL = 'ipfs://bafybeifboxxuol57cwhg5iagygbxbq7ufe4xbiqe2ttp4xxhtjp7bjylvi/'
 
 # Настройка логирования
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -33,15 +33,20 @@ async def fetch_random_ghoon():
                 "message": "No Ghoon available today!"
             }
         
-        # Выбираем случайный NFT из списка
-        ghoon = random.choice(data['nfts'])
-        image_url = ghoon.get('image_url', 'https://example.com/default_image.png')
-        message = "This Ghoon brings happiness today!"  # Или используйте описание из API, если оно доступно
-        
-        return {
-            "image_url": image_url,
-            "message": message
-        }
+    # Функция для получения случайного NFT
+async def fetch_random_ghoon():
+    # Выбираем случайное число от 1 до 1107
+    random_id = random.randint(1, 1107)
+    
+    # Формируем URL изображения на основе случайного ID
+    image_url = f'https://ipfs.io/ipfs/bafybeifboxxuol57cwhg5iagygbxbq7ufe4xbiqe2ttp4xxhtjp7bjylvi/{random_id}.png'
+    
+    message = "This Ghoon brings happiness today!"
+    
+    return {
+        "image_url": image_url,
+        "message": message
+    }
 
 async def send_daily_ghoon(context: CallbackContext):
     for user_id in user_ids:
