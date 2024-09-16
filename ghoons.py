@@ -8,6 +8,7 @@ import httpx
 
 # Настройки
 TOKEN = '7420449985:AAHVJSWeVstT2kXWh1MPhGi8eGbr4vfA3h0'
+NFT_COLLECTION_API = 'https://api.pallet.exchange/api/v2/nfts/sei17atqkdaqhwg3et5pr73wc7k2tv0h0httgrmx58hdwk764yf9jc9sp9ldhc/details'
 BASE_IPFS_URL = 'ipfs://bafybeifboxxuol57cwhg5iagygbxbq7ufe4xbiqe2ttp4xxhtjp7bjylvi/'
 
 # Настройка логирования
