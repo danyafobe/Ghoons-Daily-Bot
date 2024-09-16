@@ -17,24 +17,7 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 # Хранилище пользователей
 user_ids = set()
 
-async def start(update: Update, context: CallbackContext):
-    user_id = update.message.from_user.id
-    user_ids.add(user_id)
-    await update.message.reply_text("You've been registered for daily Ghoons!")
-
-async def fetch_random_ghoon():
-    async with httpx.AsyncClient() as client:
-        response = await client.get(NFT_COLLECTION_API)
-        data = response.json()
-        
-        # Предположим, что `data` содержит список объектов NFT в поле `nfts`
-        if 'nfts' not in data or not data['nfts']:
-            return {
-                "image_url": "https://example.com/default_image.png",  # Замените на изображение по умолчанию
-                "message": "No Ghoon available today!"
-            }
-        
-    # Функция для получения случайного NFT
+# Функция для получения случайного Ghoon
 async def fetch_random_ghoon():
     # Выбираем случайное число от 1 до 1107
     random_id = random.randint(1, 1107)
@@ -49,11 +32,27 @@ async def fetch_random_ghoon():
         "message": message
     }
 
+# Обработчик команды /start
+async def start(update: Update, context: CallbackContext):
+    user_id = update.message.from_user.id
+    user_ids.add(user_id)
+    
+    # Отправка сообщения о регистрации
+    await update.message.reply_text("You've been registered for daily Ghoons!")
+    
+    # Получение случайного Ghoon и его отправка пользователю
+    ghoon = await fetch_random_ghoon()
+    image_url = ghoon['image_url']
+    message = f"This is your first Ghoon! {ghoon['message']}"
+    
+    await context.bot.send_photo(chat_id=user_id, photo=image_url, caption=message)
+
+# Функция для ежедневной отправки Ghoon
 async def send_daily_ghoon(context: CallbackContext):
     for user_id in user_ids:
         ghoon = await fetch_random_ghoon()
         image_url = ghoon['image_url']
-        message = f"This is your Ghoons for today! {ghoon['message']}"
+        message = f"This is your Ghoon for today! {ghoon['message']}"
         
         await context.bot.send_photo(chat_id=user_id, photo=image_url, caption=message)
 
