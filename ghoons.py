@@ -71,7 +71,7 @@ def main():
         return
 
     # Планирование ежедневного задания
-    job_queue.run_daily(send_daily_ghoon, time=datetime.time(hour=0, minute=0, second=10))
+    job_queue.run_daily(send_daily_ghoon, time=datetime.time(hour=9, minute=0, second=0))
 
     # Запуск бота
     application.run_polling()
